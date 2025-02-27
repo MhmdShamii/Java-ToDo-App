@@ -27,3 +27,10 @@ Before running the application, make sure you have the following installed:
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/MhmdShamii/Java-ToDo-App.git
+*** Make sure to change :
+inside the DataBaseContraller.java class
+   ```bash
+    String url = "jdbc:mysql://localhost:3306/todo";
+    String name = "your MySql username";
+    String pass = "your MySql password";
+  
