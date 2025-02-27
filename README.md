@@ -28,7 +28,7 @@ Before running the application, make sure you have the following installed:
    ```bash
    git clone https://github.com/MhmdShamii/Java-ToDo-App.git
 2. **Database:** use setup.sql file to setup your databse
-3. ** Make sure to change :**
+3. **Make sure to change :**
 inside the DataBaseContraller.java class
    ```bash
     String url = "jdbc:mysql://localhost:3306/todo";
