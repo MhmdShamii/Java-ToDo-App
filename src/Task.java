@@ -12,7 +12,6 @@ public class Task {
     public int getId() {
         return id;
     }
-
     public String getTask() {
         return task;
     }

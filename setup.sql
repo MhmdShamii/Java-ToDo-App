@@ -7,6 +7,6 @@ USE todo;
 -- Create the 'tasks' table
 CREATE TABLE IF NOT EXISTS tasks (
     taskID INT PRIMARY KEY AUTO_INCREMENT,  -- Task ID with auto-increment
-    Task VARCHAR(255),                      -- Task description
+    task VARCHAR(255),                      -- Task description
     status BOOLEAN                          -- Task status (done or not)
 );

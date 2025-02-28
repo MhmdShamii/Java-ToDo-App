@@ -2,120 +2,131 @@ import java.sql.*;
 import java.util.LinkedList;
 
 public class DataBaseContraller {
-    String url = "jdbc:mysql://localhost:3306/todo";
-    String name = "root";
-    String pass = "132@@4";
 
-    Connection connection;
-    public DataBaseContraller()
-    {
-        try
-        {
-            connection = DriverManager.getConnection(url,name,pass);
-        }
-        catch(SQLException e)
-        {
-            e.printStackTrace();
+    private String url = System.getenv("DB_TODO_URL");
+    private String userName = System.getenv("DB_USERNAME");
+    private String password = System.getenv("DB_PASSWORD");
+    private Connection dbconnection;
+
+    public DataBaseContraller() throws SQLException{
+        try {
+            this.dbconnection = DriverManager.getConnection(this.url,this.userName,this.password);
+        }catch (SQLException e){
+            throw e;
         }
     }
-
-    //select
-    public LinkedList<Task> get(String mainQuery) throws SQLException {
-        LinkedList<Task> data = new LinkedList<Task>();
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(mainQuery)){
-
-            while (resultSet.next()){
-
-                int id = resultSet.getInt("taskID");
-                String taskdata = resultSet.getString("Task");
-                boolean status = resultSet.getBoolean("status");
-
-                data.add(new Task(id,taskdata,status));
-            }
-        }
-        return data;
-    }
-    public LinkedList<Task> getAllTasks() throws SQLException {
-        return get("SELECT * FROM tasks");
-    }
-    public LinkedList<Task> getDoneTasks() throws SQLException {
-        return get("SELECT * FROM tasks where status = 1");
-    }
-    public  LinkedList<Task> getUnDoneTasks() throws SQLException {
-        return get("SELECT * FROM tasks where status = 0");
-    }
-    public  LinkedList<Task> getByID(int id) throws SQLException {
-        if (!doesIdExist(id)){
-            System.out.println("invalid id");
-            return null;
-        }
-        return get("SELECT * FROM tasks where taskID = "+ id);
-    }
-
-    //update
-    public boolean updateStatus(int id) {
-        if (doesIdExist(id)){
-            String query = "UPDATE tasks SET status = NOT status WHERE taskID = " + id;
-
-            try (Statement statement = connection.createStatement()) {
-                int rowsUpdated = statement.executeUpdate(query);
-                return rowsUpdated > 0; // Return true if at least one row was updated
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-        return false;
-    }
-
-    //delete
-    public boolean deleteTask(int id){
-        if (doesIdExist(id)){
-            String query = "DELETE FROM tasks WHERE taskID = " + id;
-
-            try (Statement statement = connection.createStatement()) {
-                int rowsUpdated = statement.executeUpdate(query);
-                return rowsUpdated > 0; // Return true if at least one row was updated
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-        return false;
-    }
-
-    //add
+    //Create
     public boolean addTask(String task){
-        String query = "INSERT INTO tasks (Task, status) VALUES ('"+task+"', false)";
+        String sql ="INSERT INTO tasks(task,status) values ( ? ,false)";
+        try{
+            PreparedStatement statement = dbconnection.prepareStatement(sql);
+            statement.setString(1,task);
 
-        try (Statement statement = connection.createStatement()) {
-            int rowsUpdated = statement.executeUpdate(query);
-            return rowsUpdated > 0; // Return true if at least one row was updated
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            int result = statement.executeUpdate();
+            return result > 0;
+
+        }catch (SQLException e){
+            throw new RuntimeException("Error adding task" + e);
         }
     }
+    //Read
+    public LinkedList<Task> getAll() {
+        String sql = "SELECT * FROM tasks";
+        LinkedList<Task> tasks = new LinkedList<>();
+        try (PreparedStatement pstmt = dbconnection.prepareStatement(sql);
+             ResultSet resultSet = pstmt.executeQuery()) {
 
-    //id check
-    public boolean doesIdExist(int id) {
-        String query = "SELECT COUNT(*) FROM tasks WHERE taskID = " + id;
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)) {
-
-            if (resultSet.next()) {
-                int count = resultSet.getInt(1);
-                if (count == 0){
-                    System.out.println("== INVALID ID ==");
-                }
-                return count > 0;
+            while (resultSet.next()) {
+                int id = resultSet.getInt(1);
+                String taskData = resultSet.getString(2);
+                boolean status = resultSet.getBoolean(3);
+                tasks.add(new Task(id,taskData,status));
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error retrieving tasks", e);
         }
-        return false;
+        return tasks;
+    }
+    public LinkedList<Task> getStatus(boolean status) {
+        String sql = "SELECT * FROM tasks WHERE STATUS = ?";
+        LinkedList<Task> tasks = new LinkedList<>();
+        try {
+            PreparedStatement pstmt = dbconnection.prepareStatement(sql);
+            pstmt.setInt(1,status?1:0);
+            ResultSet resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt(1);
+                String taskData = resultSet.getString(2);
+                boolean taskStatus = resultSet.getBoolean(3);
+                tasks.add(new Task(id,taskData,taskStatus));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving tasks", e);
+        }
+        return tasks;
+    }
+    public Task getTask(int id){
+        String sql = "SELECT * FROM tasks WHERE taskID = ?";
+        Task task = null;
+        try {
+            PreparedStatement pstmt = dbconnection.prepareStatement(sql);
+            pstmt.setInt(1,id);
+            try (ResultSet resultSet = pstmt.executeQuery()) {
+                if (resultSet.next()) {
+                    int taskid = resultSet.getInt(1);
+                    String taskData = resultSet.getString(2);
+                    boolean status = resultSet.getBoolean(3);
+                    task = new Task(taskid,taskData,status);
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving tasks", e);
+        }
+        return task;
+    }
+    //Update
+    public boolean updateStatus(int id){
+        String sql ="UPDATE tasks SET STATUS = NOT STATUS WHERE taskID = ?";
+        try{
+            PreparedStatement statement = dbconnection.prepareStatement(sql);
+            statement.setInt(1,id);
+
+            int result = statement.executeUpdate();
+            return result > 0;
+
+        }catch (SQLException e){
+            throw new RuntimeException("Error Updating task" + e);
+        }
+    }
+    //Delete
+    public boolean deleteTask(int id){
+        String sql ="DELETE FROM tasks WHERE taskID = ?";
+        try{
+            PreparedStatement statement = dbconnection.prepareStatement(sql);
+            statement.setInt(1,id);
+
+            int result = statement.executeUpdate();
+            return result > 0;
+
+        }catch (SQLException e){
+            throw new RuntimeException("Error Deleting task" + e);
+        }
+    }
+
+    public void closeConnection() {
+        try {
+            if (dbconnection != null && !dbconnection.isClosed()) {
+                dbconnection.close();
+                System.out.println("Database connection closed.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error closing the database connection: " + e.getMessage());
+        }
     }
 }
+
