@@ -26,15 +26,13 @@ To run this code on your local machine, make sure you have the following install
 ### Setting up MySQL Database:
 - Use the setup.sql file to setup ur database
 - set ur environment variables containing :
+- ## Setting Up the Database Credentials
 
-  - ``
-  DB_TODO_URL= "Your databse connection url"
-  ``
-  - ``
-  DB_USERNAME= "Your database username"
-  ``
-  - ``
-  DB_PASSWORD= "Your database password"
-  ``
+  - After cloning the repository, you'll need to configure the database connection by setting up a `.env` file with your database credentials.
+
+### Steps to Set Up:
+- **Copy the Example File**:
+  Copy the `DataBase_Credentials.env.example` file to a new file called `DataBase_Credentials.env` in the root of the project following the structure provided inside the `.example` folder replace the placeholders with your info.
+
 
 

@@ -1,12 +1,12 @@
 public class Task {
-    private int id ;
-    private String task;
-    private boolean status;
+    private final int id ;
+    private final String task;
+    private final boolean status;
 
-    public Task(int id, String task,boolean status){
-        this.id=id;
-        this.task=task;
-        this.status=status;
+    public Task(int id, String taskDescription,boolean status){
+        this.id = id;
+        this.task = taskDescription;
+        this.status = status;
     }
 
     public int getId() {
