@@ -12,8 +12,10 @@ This is a simple **Task Management System** application that allows users to per
 ## Features
 - **Add Tasks**: Allows users to add new tasks to the database.
 - **Update Task Status**: Allows users to toggle the status of tasks between done and undone.
+- **Update Task Description**: Allows the user to edit a specific task Description.
 - **View Tasks**: View all tasks or filter them by their status (done/undone).
 - **Delete Tasks**: Allows users to delete tasks by their ID.
+- **Reset Database**: Reseet the database records.
 - **View Specific Task**: View details of a task by providing its ID.
 
 ## Prerequisites
